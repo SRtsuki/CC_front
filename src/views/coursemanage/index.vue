@@ -1,0 +1,65 @@
+<template>
+  <div class="app-container">
+    <el-table
+      v-loading="tableLoading"
+      :data="tableData"
+      style="width: 100%"
+      :default-sort = "{prop: 'teacher', order: 'descending'}"
+    >
+      <el-table-column
+        prop="teacher"
+        label="任课教师"
+        sortable
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="coursename"
+        label="课程名"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="instruction"
+        label="介绍"
+        :formatter="formatter">
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+
+import {getCourseList} from "@/api/course";
+
+export default {
+  name: "index.vue",
+  data(){
+    return {
+      tableData : [],
+      tableLoading: true,
+    }
+  },
+  created() {
+    this.fetchData()
+  },
+  methods: {
+    formatter(row, column) {
+      return row.address;
+    },
+    fetchData() {
+      this.tableLoading = true;
+      let params = {
+        pagenum: 0,
+        pagesize: 20
+      };
+      getCourseList(params).then(response => {
+        this.tableData = response.data.cs
+        this.tableLoading = false
+      })
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
