@@ -4,23 +4,22 @@
       v-loading="tableLoading"
       :data="tableData"
       style="width: 100%"
-      :default-sort = "{prop: 'teacher', order: 'descending'}"
+      :default-sort = "{prop: 'tid', order: 'descending'}"
     >
       <el-table-column
-        prop="teacher"
+        prop="tid"
         label="任课教师"
         sortable
-        width="180">
+        width="100">
       </el-table-column>
       <el-table-column
-        prop="coursename"
+        prop="name"
         label="课程名"
         width="180">
       </el-table-column>
       <el-table-column
         prop="instruction"
-        label="介绍"
-        :formatter="formatter">
+        label="介绍">
       </el-table-column>
     </el-table>
   </div>
@@ -42,9 +41,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    formatter(row, column) {
-      return row.address;
-    },
     fetchData() {
       this.tableLoading = true;
       let params = {
@@ -55,7 +51,7 @@ export default {
         this.tableData = response.data.cs
         this.tableLoading = false
       })
-    }
+    },
   }
 }
 </script>
