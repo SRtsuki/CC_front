@@ -81,13 +81,13 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/example/table',
     name: 'Example',
-    meta: { title: 'Example', icon: 'el-icon-s-help' },
+    meta: { title: '课程页', icon: 'el-icon-s-help' },
     children: [
       {
         path: 'table',
         name: 'Table',
         component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
+        meta: { title: '课程列表', icon: 'table' }
       },
       {
         path: 'tree',
@@ -117,7 +117,7 @@ export const constantRoutes = [
     redirect: '/nested/menu1',
     name: 'Nested',
     meta: {
-      title: 'Nested',
+      title: '管理页',
       icon: 'nested'
     },
     children: [
@@ -165,7 +165,7 @@ export const constantRoutes = [
         path: 'menu2',
         component: () => import('@/views/nested/menu2/index'),
         name: 'Menu2',
-        meta: { title: 'menu2' }
+        meta: { title: '学生管理' }
       }
     ]
   },
