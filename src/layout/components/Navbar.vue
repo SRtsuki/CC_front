@@ -15,7 +15,7 @@
 
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img :src="getAvatarUrl" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -41,6 +41,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import {BASE_URL} from '@/api/config';
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
@@ -50,6 +51,9 @@ export default {
     Hamburger
   },
   computed: {
+    getAvatarUrl(){
+      return BASE_URL + this.$store.getters.avatar + '?imageView2/1/w/80/h/80';
+    },
     ...mapGetters([
       'sidebar',
       'avatar'

@@ -2,12 +2,17 @@ import {login, logout, getInfo, register} from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import crypto from "crypto-js";
+import ro from "element-ui/src/locale/lang/ro";
 
 const getDefaultState = () => {
   return {
     token: getToken(),
-    name: '',
-    avatar: ''
+    id: '',
+    username: '',
+    nickname: '',
+    email: '',
+    avatar: '',
+    role: '',
   }
 }
 
@@ -20,11 +25,20 @@ const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_NAME: (state, name) => {
-    state.name = name
+  SET_ID: (state, id) => {
+    state.id = id
+  },
+  SET_NAME: (state, username) => {
+    state.username = username
+  },
+  SET_NICKNAME: (state, nickname) => {
+    state.nickname = nickname
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLE: (state, role) => {
+    state.role = role
   }
 }
 
@@ -56,26 +70,30 @@ const actions = {
     })
   },
 
-  // get user info
+  // 获取用户信息
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      // todo 获取用户信息
-      // getInfo(state.token).then(response => {
-      //   const { data } = response
-      //
-      //   if (!data) {
-      //     return reject('Verification failed, please Login again.')
-      //   }
-      //
-      //   const { name, avatar } = data
-      //
-      //   commit('SET_NAME', name)
-      //   commit('SET_AVATAR', avatar)
-      //   resolve(data)
-      // }).catch(error => {
-      //   reject(error)
-      // })
-      resolve();
+      // 获取用户信息
+      getInfo(state.token).then(response => {
+        const { data } = response
+
+        if (!data) {
+          return reject('Verification failed, please Login again.')
+        }
+
+        const { id, username, nickname, email, avatar, role} = data
+
+        commit('SET_ID', id);
+        commit('SET_NAME', username);
+        commit('SET_NICKNAME', nickname);
+        commit('SET_EMAIL', email);
+        commit('SET_AVATAR', avatar);
+        commit('SET_ROLE', role);
+
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
     })
   },
 

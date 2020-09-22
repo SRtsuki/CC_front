@@ -17,11 +17,11 @@ export function register(data) {
   })
 }
 
-export function getInfo(id) {
+// 获取用户自己信息
+export function getInfo(token) {
   return request({
-    url: '/user/info',
-    method: 'get',
-    params: { id }
+    url: '/user/myinfo',
+    method: 'get'
   })
 }
 
