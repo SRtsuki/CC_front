@@ -1,49 +1,62 @@
 <template>
-  <div class="mx-center">
-    <el-form ref="loginForm" :model="loginForm" :rules="rules" class="regist-container" label-position="left"
-             label-width="0px" v-loading="loading">
-      <h3 class="regist_title">用户注册</h3>
-      <el-form-item prop="username">
-        <el-input ref="account" type="string" v-model="loginForm.username"
-                  auto-complete="off" placeholder="请输入学工号" clearable></el-input>
-      </el-form-item>
-      <el-form-item prop="nickname">
-        <el-input ref="nickname" type="string" v-model="loginForm.nickname"
-                  auto-complete="off" placeholder="请输入真实姓名" clearable></el-input>
-      </el-form-item>
-      <el-form-item prop="email">
-        <el-input type="string" v-model="loginForm.email"
-                  auto-complete="off" placeholder="请输入邮箱"></el-input>
-      </el-form-item>
-      <el-form-item prop="password">
-        <el-input ref="password" type="password" v-model="loginForm.password"
-                  auto-complete="off" placeholder="请输入密码" :show-password="true" ></el-input>
-      </el-form-item>
-      <el-form-item prop="passwordag">
-        <el-input type="password" v-model="loginForm.passwordag"
-                  auto-complete="off" placeholder="请重复密码" :show-password="true" ></el-input>
-      </el-form-item>
-      <el-form-item class="regist-agre-item" prop="argement">
-        <el-checkbox v-model="loginForm.argement">
-          同意
-        </el-checkbox>
-        <span class="agreement">《注册协议》</span>
-      </el-form-item>
-      <el-form-item style="width: 100%">
-        <el-button type="primary" class="register-button" @click="handleValidateForm" :disabled="!loginForm.argement">立即注册</el-button>
-      </el-form-item>
-      <el-form-item>
-        <router-link to="/login">去登录</router-link>
-      </el-form-item>
-    </el-form>
-  </div>
+  <el-container>
+    <el-header class="register-header">
+      <router-link style="margin: auto;" to="/">
+<!--        <img src="/static/logo/logo.png" height="72" alt="Logo">-->
+        <span>【假装是个LOGO】</span>
+      </router-link>
+      <el-divider direction="vertical"></el-divider>
+      <span>注册</span>
+    </el-header>
+    <el-main id="nest-area">
+      <vue-canvas-nest :config="{color:'28,31,33', count: 88}"></vue-canvas-nest>
+      <el-form ref="loginForm" :model="loginForm" :rules="rules" class="regist-container" label-position="left"
+               label-width="0px" v-loading="loading">
+        <h3 class="regist_title">用户注册</h3>
+        <el-form-item prop="username">
+          <el-input ref="account" type="string" v-model="loginForm.username"
+                    auto-complete="off" placeholder="请输入学工号" clearable></el-input>
+        </el-form-item>
+        <el-form-item prop="nickname">
+          <el-input ref="nickname" type="string" v-model="loginForm.nickname"
+                    auto-complete="off" placeholder="请输入真实姓名" clearable></el-input>
+        </el-form-item>
+        <el-form-item prop="email">
+          <el-input type="string" v-model="loginForm.email"
+                    auto-complete="off" placeholder="请输入邮箱"></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input ref="password" type="password" v-model="loginForm.password"
+                    auto-complete="off" placeholder="请输入密码" :show-password="true" ></el-input>
+        </el-form-item>
+        <el-form-item prop="passwordag">
+          <el-input type="password" v-model="loginForm.passwordag"
+                    auto-complete="off" placeholder="请重复密码" :show-password="true" ></el-input>
+        </el-form-item>
+        <el-form-item class="regist-agre-item" prop="argement">
+          <el-checkbox v-model="loginForm.argement">
+            同意
+          </el-checkbox>
+          <span class="agreement">《注册协议》</span>
+        </el-form-item>
+        <el-form-item style="width: 100%">
+          <el-button type="primary" class="register-button" @click="handleValidateForm" :disabled="!loginForm.argement">立即注册</el-button>
+        </el-form-item>
+        <el-form-item>
+          <router-link to="/login">去登录</router-link>
+        </el-form-item>
+      </el-form>
+    </el-main>
+  </el-container>
 </template>
 
 <script>
 import crypto from 'crypto-js'
+import vueCanvasNest from 'vue-canvas-nest'
 
 export default {
   name: 'index.vue',
+  components: { vueCanvasNest },
   data() {
     const checkUsername = (rule, value, callback) => {
       if (value === '') {
@@ -169,6 +182,23 @@ export default {
 
 <style lang="scss" scoped>
 @import "@/styles/common.sass";
+
+.register-header {
+  padding-left: 20%;
+  background: #FFF;
+  box-shadow: 0 2px 8px #cac6c6;
+  height: 60px;
+  line-height: 60px;
+  .el-divider {
+    height:24px ;
+  }
+  span {
+    font-size: 24px;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
 
 .regist-container {
   border-radius: 15px;

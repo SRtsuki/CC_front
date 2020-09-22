@@ -5,6 +5,14 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
+      <div class="logo-box">
+        <router-link style="margin: auto;" to="/">
+          <!--        <img src="/static/logo/logo.png" height="72" alt="Logo">-->
+          <span>【假装是个LOGO】</span>
+        </router-link>
+        <el-divider direction="vertical"></el-divider>
+      </div>
+
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
@@ -23,7 +31,7 @@
             <el-dropdown-item>Docs</el-dropdown-item>
           </a>
           <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">Log Out</span>
+            <span style="display:block;">退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -88,9 +96,24 @@ export default {
     float: right;
     height: 100%;
     line-height: 50px;
+    display: flex;
 
     &:focus {
       outline: none;
+    }
+
+    .logo-box {
+      line-height: 50px;
+      .el-divider {
+        height:40px;
+        margin-right: 15px;
+      }
+      span {
+        font-size: 18px;
+        vertical-align: middle;
+        -webkit-user-select: none;
+        user-select: none;
+      }
     }
 
     .right-menu-item {
