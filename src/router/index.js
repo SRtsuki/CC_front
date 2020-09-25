@@ -62,20 +62,6 @@ export const constantRoutes = [
     }]
   },
 
-  // 课程管理
-  {
-    path: '/coursemanage',
-    component: Layout,
-    children: [
-      {
-        path: '/coursemanage',
-        name: 'coursemanage',
-        component: () => import('@/views/coursemanage/index'),
-        meta: { title: '课程管理', icon: 'form' }
-      }
-    ]
-  },
-
   {
     path: '/example',
     component: Layout,
@@ -169,18 +155,76 @@ export const constantRoutes = [
       }
     ]
   },
+]
 
+/**
+ * asyncRoutes
+ * the routes that need to be dynamically loaded based on user roles
+ */
+export const asyncRoutes = [
+  // 课程管理
   {
-    path: 'external-link',
+    path: '/coursemanage',
     component: Layout,
+    redirect: '/coursemanage/index',
+    meta: {
+      title: '课程管理',
+      icon: 'form',
+      roles: ['teacher']
+    },
     children: [
       {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
+        path: 'index',
+        name: 'coursemanage',
+        component: () => import('@/views/coursemanage/index'),
+        meta: { title: '课程管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false}
+      }
+    ]
+  },
+  // 课程资源管理
+  {
+    path: '/t/resource',
+    component: Layout,
+    redirect: '/t/resource/index',
+    meta: {
+      title: '课程资源管理',
+      icon: 'form',
+      roles: ['teacher'],
+      hascid: true  //必须所有级都写
+    },
+    children: [
+      {
+        path: 'index/:cid',
+        name: 'resource',
+        component: () => import('@/views/resource/teacher_index'),
+        meta: { title: '课程资源管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false, hascid: true}
       }
     ]
   },
 
+  // {
+  //   path: '/permission',
+  //   component: Layout,
+  //   redirect: '/permission/page',
+  //   alwaysShow: true, // will always show the root menu
+  //   name: 'Permission',
+  //   meta: {
+  //     title: 'Permission',
+  //     icon: 'lock',
+  //     roles: ['admin', 'editor'] // you can set roles in root nav
+  //   },
+  //   children: [
+  //     {
+  //       path: 'page',
+  //       component: () => import('@/views/permission/page'),
+  //       name: 'PagePermission',
+  //       meta: {
+  //         title: 'Page Permission',
+  //         roles: ['admin'] // or you can only set roles in sub nav
+  //       }
+  //     },
+  //   ],
+  // },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

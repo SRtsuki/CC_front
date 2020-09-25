@@ -2,7 +2,6 @@ import {login, logout, getInfo, register} from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import crypto from "crypto-js";
-import ro from "element-ui/src/locale/lang/ro";
 
 const getDefaultState = () => {
   return {
@@ -33,6 +32,9 @@ const mutations = {
   },
   SET_NICKNAME: (state, nickname) => {
     state.nickname = nickname
+  },
+  SET_EMAIL: (state, email) => {
+    state.avatar = email
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
@@ -81,9 +83,9 @@ const actions = {
           return reject('Verification failed, please Login again.')
         }
 
-        const { id, username, nickname, email, avatar, role} = data
+        const { ID, username, nickname, email, avatar, role} = data
 
-        commit('SET_ID', id);
+        commit('SET_ID', ID);
         commit('SET_NAME', username);
         commit('SET_NICKNAME', nickname);
         commit('SET_EMAIL', email);

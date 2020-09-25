@@ -28,6 +28,7 @@
 <script>
 
 import {getCourseList} from "@/api/course";
+import {mapGetters} from "vuex";
 
 export default {
   name: "index.vue",
@@ -39,6 +40,8 @@ export default {
   },
   created() {
     this.fetchData()
+  },
+  computed:{
   },
   methods: {
     fetchData() {
