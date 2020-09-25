@@ -2,7 +2,6 @@ import {login, logout, getInfo, register} from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import crypto from "crypto-js";
-import ro from "element-ui/src/locale/lang/ro";
 
 const getDefaultState = () => {
   return {
@@ -33,6 +32,9 @@ const mutations = {
   },
   SET_NICKNAME: (state, nickname) => {
     state.nickname = nickname
+  },
+  SET_EMAIL: (state, email) => {
+    state.avatar = email
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar

@@ -1,14 +1,14 @@
 <template>
-  <div v-if="!item.hidden">
+  <div v-if="!item.hidden && !(item.meta && item.meta.hascid && this.$store.getters.cid === 0)">
     <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
-      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
-        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
+      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path, onlyOneChild.meta)">
+        <el-menu-item :index="resolvePath(onlyOneChild.path, onlyOneChild.meta)" :class="{'submenu-title-noDropdown':!isNest}">
           <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="onlyOneChild.meta.title" />
         </el-menu-item>
       </app-link>
     </template>
 
-    <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
+    <el-submenu v-else ref="subMenu" :index="resolvePath(item.path, item.meta)" popper-append-to-body>
       <template slot="title">
         <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
       </template>
@@ -17,7 +17,7 @@
         :key="child.path"
         :is-nest="true"
         :item="child"
-        :base-path="resolvePath(child.path)"
+        :base-path="resolvePath(child.path, child.meta)"
         class="nest-menu"
       />
     </el-submenu>
@@ -56,6 +56,8 @@ export default {
     this.onlyOneChild = null
     return {}
   },
+  computed: {
+  },
   methods: {
     hasOneShowingChild(children = [], parent) {
       const showingChildren = children.filter(item => {
@@ -81,14 +83,23 @@ export default {
 
       return false
     },
-    resolvePath(routePath) {
+    resolvePath(routePath, metainfo) {
       if (isExternal(routePath)) {
         return routePath
       }
       if (isExternal(this.basePath)) {
         return this.basePath
       }
-      return path.resolve(this.basePath, routePath)
+      // if (metainfo)  {
+      //   console.log("===================")
+      //   console.log(metainfo.title + metainfo.hascid);
+      // },
+      if (metainfo && metainfo.hascid){
+        let finalPath = path.resolve(this.basePath, routePath);
+        return finalPath.replace(":cid", this.$store.getters.cid.toString());
+      } else {
+        return path.resolve(this.basePath, routePath)
+      }
     }
   }
 }

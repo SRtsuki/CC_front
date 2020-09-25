@@ -1,5 +1,26 @@
 <template>
   <div style="padding:30px;">
+    <!--    课程切换    -->
+    <el-card class="resource-title-card">
+      <span class="course-title">{{courseInfo.name}}</span>
+      <span class="course-id">#{{this.$route.params.cid}}</span>
+      <span class="select-course-box" v-popover:popover1><i class="el-icon-refresh"></i>切换课程</span>
+      <el-popover
+        placement="bottom-end"
+        width="400"
+        ref="popover1"
+        trigger="hover">
+        <el-table :data="this.$store.getters.courseList"
+                  :style="getPopoverTableStyle"
+                  empty-text="暂无课程"
+                  @row-click = "onCourseClick"
+        >
+          <el-table-column property="name" label="课程名"></el-table-column>
+        </el-table>
+      </el-popover>
+    </el-card>
+    <!--    课程切换 结束    -->
+
     <el-alert :closable="false" title="学生管理" />
     <el-main>
       <div>
@@ -44,11 +65,13 @@ import {
   addStudentList,
   deleteStudentList,
 } from "@/api/student";
-import { store } from "@/store";
 
 export default {
   data() {
     return {
+      // 获取到的课程信息
+      courseInfo: '',
+      // 页面数据
       tableData: [],
       tableLoading: true,
       dialogTableVisible: false,
@@ -57,14 +80,47 @@ export default {
       multipleSelection:[],
     };
   },
+  computed: {
+    getPopoverTableStyle(){
+      let height = document.body.clientHeight*0.6;
+      return {
+        'max-height': height.toString() + 'px',
+        'overflow': 'auto',
+        'width': '100%',
+        'show-header' : false,
+        'fit' : true,
+      };
+    },
+  },
   created() {
+    // 获取课程信息
+    this.$store.dispatch('course/getCourseInfo', parseInt(this.$route.params.cid)).then( data => {
+      this.courseInfo = data;
+    }).catch(err=>{
+      this.$message.error("服务器错误：" + err);
+    });
+
     this.fetchData();
   },
   methods: {
+    // 课程跳转
+    onCourseClick(row){
+      this.$store.dispatch('course/changeSetting', {
+        key : 'cid',
+        value: row.ID
+      }).then(()=>{
+        this.$router.push({
+          name: this.$route.name,
+          params: {
+            cid : row.ID
+          }
+        });
+      });
+    },
     fetchData() {
       this.tableLoading = true;
       let params = {
-        id: this.$store.getters.id,
+        id: parseInt(this.$route.params.cid),
       };
       //课程id
       // console.log(params);
@@ -79,7 +135,7 @@ export default {
     },
     addStudent() {
       this.dialogTableVisible = false;
-      let cid = parseInt(this.selectedCourse);
+      let cid = parseInt(this.$route.params.cid);
       let ids = this.textarea.split(",");
       console.log(ids);
       let params = { cid, ids };
@@ -103,7 +159,7 @@ export default {
       // for(let id in this.multipleSelection.)
     },
     deleteStudent(){
-      let cid = this.$store.getters.id;
+      let cid = parseInt(this.$route.params.id);
       console.log(this.multipleSelection);
       for(let id in this.multipleSelection){
         console.log("id"+id);
@@ -118,9 +174,39 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style lang="scss" scoped>
+@import "src/styles/common";
+
 .el-main {
   background: #f4f4f5;
   margin-top: 15px;
 }
+
+.resource-title-card {
+  width: 99%;
+  margin: auto;
+  height: 80px;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  span {
+    font-size: 24px;
+  }
+  .course-title {
+  }
+  .course-id {
+    color: $font-three-color;
+  }
+  .select-course-box {
+    padding-left: 10px;
+    font-size: 18px;
+    -webkit-user-select: none;
+    user-select: none;
+    color: $font-three-color;
+  }
+}
+
 </style>
