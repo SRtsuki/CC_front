@@ -29,11 +29,18 @@
           style="width: 100%"
           :default-sort="{prop: 'tid', order: 'descending'}"
           @selection-change="handleSelectionChange"
+
         >
           <el-table-column type="selection" width="50px;"></el-table-column>
           <el-table-column prop="tid" label="任课教师" sortable width="100"></el-table-column>
           <el-table-column prop="name" label="课程名" width="180"></el-table-column>
           <el-table-column prop="instruction" label="介绍"></el-table-column>
+          <el-table-column label="操作" width="400px">
+            <template slot-scope="scope">
+              <el-button type="primary" @click="toStudent(scope.row.ID)">管理学生</el-button>
+              <el-button type="primary" @click="toResource(scope.row.ID)">发布资源</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </el-main>
@@ -41,7 +48,7 @@
 </template>
 
 <script>
-import { getCourseList, courseCreate ,courseDelete} from "@/api/course";
+import { getMyCourseList, courseCreate, courseDelete } from "@/api/course";
 import { mapGetters } from "vuex";
 
 export default {
@@ -53,7 +60,8 @@ export default {
       dialogFormVisible: false,
       courseName: "",
       courseDes: "",
-      multipleSelection:[],
+      multipleSelection: [],
+      currentRowID: 0,
     };
   },
   created() {
@@ -63,12 +71,12 @@ export default {
   methods: {
     fetchData() {
       this.tableLoading = true;
-      let params = {
-        pagenum: 0,
-        pagesize: 20,
-      };
-      getCourseList(params).then((response) => {
-        this.tableData = response.data.cs;
+      // let params = {
+      //   pagenum: 0,
+      //   pagesize: 20,
+      // };
+      getMyCourseList().then((response) => {
+        this.tableData = response.data;
         this.tableLoading = false;
       });
     },
@@ -89,12 +97,43 @@ export default {
       });
     },
     deleteCourse() {
-      for(let id in this.multipleSelection){
-        let params = {cid:parseInt(this.multipleSelection[id].ID)};
-        courseDelete(params).then(response => {
+      for (let id in this.multipleSelection) {
+        let params = { cid: parseInt(this.multipleSelection[id].ID) };
+        courseDelete(params).then((response) => {
           this.$router.go(0);
-        })
+        });
       }
+    },
+    toStudent(id) {
+      console.log(id);
+      this.$store
+        .dispatch("course/changeSetting", {
+          key: "cid",
+          value: id,
+        })
+        .then(() => {
+          this.$router.push({
+            name: "studentmanage",
+            params: {
+              cid: id,
+            },
+          });
+        });
+    },
+    toResource(id) {
+      this.$store
+        .dispatch("course/changeSetting", {
+          key: "cid",
+          value: id,
+        })
+        .then(() => {
+          this.$router.push({
+            name: "resource",
+            params: {
+              cid: id,
+            },
+          });
+        });
     },
   },
 };
