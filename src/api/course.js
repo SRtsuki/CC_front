@@ -7,9 +7,6 @@ export function getCourseList(params) {
     url: '/course/list',
     method: 'get',
     params: { pagenum, pagesize },
-    // headers:{
-    //   authorization: store.state.token,
-    // }
   })
 }
 
