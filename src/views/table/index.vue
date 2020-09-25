@@ -3,7 +3,7 @@
     <el-alert :closable="false" title="课程列表" />
     <el-main>
       <div>
-        <el-button>加入课程</el-button>
+        <!-- <el-button>加入课程</el-button> -->
         <el-button circle icon="el-icon-refresh"></el-button>
       </div>
       <div style="padding-top:15px;">
@@ -25,7 +25,7 @@
 
 <script>
 
-import {getCourseList} from "@/api/course";
+import {getCourseList,getMyCourseList} from "@/api/course";
 
 export default {
   data(){
@@ -40,13 +40,14 @@ export default {
   methods: {
     fetchData() {
       this.tableLoading = true;
-      let params = {
-        pagenum: 0,
-        pagesize: 20
-      };
-      getCourseList(params).then(response => {
-        this.tableData = response.data.cs
-        this.tableLoading = false
+      // let params = {
+      //   pagenum: 0,
+      //   pagesize: 20
+      // };
+      getMyCourseList().then(response => {
+        console.log(response.data);
+        this.tableData = response.data;
+        this.tableLoading = false;
       })
     },
   }
