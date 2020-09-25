@@ -18,13 +18,13 @@
         </el-table>
       </el-popover>
     </el-card>
+<!--    :folderType="rource_type"-->
+<!--    :is-folder-fn="isFolderFn"-->
     <wlExplorer
       ref="wl-explorer-cpt"
       :headerDropdown="headerHandle"
       :columns="file_table_columns"
       :all-path="all_folder_list"
-      :is-folder-fn="isFolderFn"
-      :folderType="rource_type"
       :data="file_table_data"
       :props="explorer_prop"
       @handleFolder="handleFolder"
@@ -45,6 +45,7 @@ Vue.use(wlExplorer);
 
 export default {
   name: "teacher_index.vue",
+  // components: { wlExplorer },
   data(){
     return {
       // 获取到的课程信息
@@ -54,6 +55,15 @@ export default {
       file_table_data:[],
       // 文件列表表头数据
       file_table_columns: [],
+      // 所有文件路径列表,用于快速访问、移动、上传、新建
+      all_folder_list: [],
+      // 文件浏览器配置项
+      explorer_prop:{
+
+      },
+      // 头部更多操作自定义菜单
+      headerHandle: [],
+      fade: null,
     }
   },
   computed: {
@@ -98,6 +108,29 @@ export default {
           }
         });
       });
+    },
+    // 判断row是否为文件夹
+    isFolderFn(row){
+      return false;
+    },
+    // 文件夹新增或编辑处理 act当前选择文件夹、type类型edit/add、file当前的路径信息
+    handleFolder(act, type, file){
+      console.log(act + "|||" + type + "|||" + file);
+      console.log(act);
+      console.log(type);
+      console.log(file);
+    },
+    // 获取数据 path当前路径对象、refresh是否需要更新数据
+    fileSearch(path, refresh){
+
+    },
+    // 删除数据 data为要删除的数据
+    fileDel(data){
+
+    },
+    // 为防止弹出框覆盖，应在接收到此函数时关闭外部页面上其他遮罩性的dom
+    closeOtherLayout(fade){
+
     }
   }
 }
