@@ -27,3 +27,21 @@ export function courseInfo(params) {
     params: {id}
   })
 }
+
+export function courseCreate(params) {
+  let {name,instruction} = params;
+  return request({
+    url:'/course/create',
+    method:'post',
+    data:{name,instruction},
+  })
+}
+
+export function courseDelete(params){
+  let {cid} = params;
+  return request({
+    url:'/course/del',
+    method:'delete',
+    data:{cid},
+  })
+}

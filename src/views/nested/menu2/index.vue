@@ -31,22 +31,21 @@
       <div style="margin-top:15px;">
         <el-table :data="tableData" style="width:100%" v-loading="tableLoading" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50px;"></el-table-column>
-          <el-table-column label="学号" prop="id" width="200"></el-table-column>
+          <el-table-column label="ID" prop="ID" width="200"></el-table-column>
           <el-table-column label="用户名" prop="username" width="300"></el-table-column>
           <el-table-column label="昵称" prop="nickname" width="300"></el-table-column>
           <el-table-column label="邮箱" prop="email"></el-table-column>
-          <!-- <el-table-column label="操作"></el-table-column> -->
         </el-table>
       </div>
       <el-dialog title="添加学生" :visible.sync="dialogTableVisible">
         <el-form>
-          <el-form-item label="所选课程">
+          <!-- <el-form-item label="所选课程">
             <el-select v-model="selectedCourse" placeholder="请选择课程">
               <el-option label="计算机组成" value="1"></el-option>
               <el-option label="操作系统" value="2"></el-option>
               <el-option label="计算机网络" value="3"></el-option>
             </el-select>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="添加学生">
             <el-input type="textarea" :rows="4" placeholder="请输入学号，并使用英文‘,’分隔" v-model="textarea"></el-input>
           </el-form-item>
@@ -76,7 +75,7 @@ export default {
       tableLoading: true,
       dialogTableVisible: false,
       textarea: "",
-      selectedCourse: "",
+      // selectedCourse: "",
       multipleSelection:[],
     };
   },
@@ -123,7 +122,6 @@ export default {
         id: parseInt(this.$route.params.cid),
       };
       //课程id
-      // console.log(params);
       getStudentList(params)
         .then((response) => {
           this.tableData = response.data;
@@ -155,21 +153,18 @@ export default {
     handleSelectionChange(val){
       this.multipleSelection = val;
       console.log(val);
-      // let cid = this.$store.getters.id;
-      // for(let id in this.multipleSelection.)
     },
     deleteStudent(){
-      let cid = parseInt(this.$route.params.id);
-      console.log(this.multipleSelection);
+      let cid = parseInt(this.$route.params.cid);
       for(let id in this.multipleSelection){
         console.log("id"+id);
-        console.log(this.multipleSelection[id].username);
-        let params = {cid:cid,id:parseInt(this.multipleSelection[id].username)};
+        console.log(this.multipleSelection[id].ID);
+        let params = {cid:cid,id:parseInt(this.multipleSelection[id].ID)};
         // console.log(params);
         deleteStudentList(params).then(response =>{
         }).catch((err)=>(console.log(err.msg)));
       }
-      // this.$router.go(0);
+      this.$router.go(0);
     }
   },
 };
