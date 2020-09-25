@@ -22,7 +22,7 @@ export function deleteStudentList(params){
     let {cid,id} = params;
     return request({
         url:'/student/del',
-        method:'post',
+        method:'delete',
         data:{cid,id},
     })
 }

@@ -86,6 +86,10 @@ export default {
 
       addStudentList(params)
         .then((response) => {
+          this.$message({
+            message:'添加成功',
+            type:'success'
+          });
           this.$router.go(0);
         })
         .catch((err) => {
@@ -104,10 +108,12 @@ export default {
       for(let id in this.multipleSelection){
         console.log("id"+id);
         console.log(this.multipleSelection[id].username);
-        let params = {cid:cid,username:parseInt(this.multipleSelection[id].username)};
+        let params = {cid:cid,id:parseInt(this.multipleSelection[id].username)};
+        // console.log(params);
         deleteStudentList(params).then(response =>{
         }).catch((err)=>(console.log(err.msg)));
       }
+      // this.$router.go(0);
     }
   },
 };
