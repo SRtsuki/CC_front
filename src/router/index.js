@@ -31,6 +31,15 @@ import Layout from '@/layout'
  * all roles can be accessed
  */
 export const constantRoutes = [
+  // 容器terminal测试
+  {
+    path: '/terminal-test',
+    component: () => import('@/views/terminal/test'),
+  },
+  {
+    path: '/terminal',
+    component: () => import('@/views/terminal/index'),
+  },
   {
     path: '/login',
     component: () => import('@/views/login/index'),
