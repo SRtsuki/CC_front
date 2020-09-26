@@ -181,6 +181,26 @@ export const asyncRoutes = [
       }
     ]
   },
+  // 学生查看课程资源文件
+  {
+    path: '/s/resource',
+    component: Layout,
+    redirect: '/s/resource/index',
+    meta: {
+      title: '课程资源',
+      icon: 'form',
+      roles: ['student'],
+      hascid: true  //必须所有级都写
+    },
+    children: [
+      {
+        path: 'index/:cid',
+        name: 'student-resource',
+        component: () => import('@/views/resource/student_index'),
+        meta: { title: '课程资源', icon: 'form', roles: ['student'] ,breadcrumb: false, hascid: true}
+      }
+    ]
+  },
   // 课程管理
   {
     path: '/coursemanage',
