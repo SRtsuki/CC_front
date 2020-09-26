@@ -21,7 +21,8 @@
     "vue-canvas-nest": "^2.0.0",
     "vue-router": "3.0.6",
     "vuex": "^3.5.1",
-    "wl-explorer": "^0.1.9"
+    "wl-explorer": "^0.1.9",
+    "xterm": "^3.14.5"
   },
   "devDependencies": {
     "autoprefixer": "9.5.1",
