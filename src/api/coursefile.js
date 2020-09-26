@@ -17,3 +17,12 @@ export function downloadStaticFileByBlob(url){
     responseType: 'blob'
   })
 }
+
+//文件删除
+export function deleteCourseFile(data){
+  return request({
+    url: '/coursefile/del',
+    method: 'post',
+    data
+  })
+}
