@@ -37,8 +37,10 @@
           <el-table-column prop="instruction" label="介绍"></el-table-column>
           <el-table-column label="操作" width="400px">
             <template slot-scope="scope">
-              <el-button type="primary" @click="toStudent(scope.row.ID)">管理学生</el-button>
-              <el-button type="primary" @click="toResource(scope.row.ID)">发布资源</el-button>
+              <el-button type="primary" size="mini" @click="toStudent(scope.row.ID)">管理学生</el-button>
+              <el-button type="primary" size="mini" @click="handleJump('image', scope.row.ID)">管理镜像</el-button>
+              <el-button type="primary" size="mini" @click="handleJump('container' ,scope.row.ID)">管理容器</el-button>
+              <el-button type="primary" size="mini" @click="toResource(scope.row.ID)">发布资源</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -134,6 +136,14 @@ export default {
             },
           });
         });
+    },
+    handleJump(name, id){
+      this.$router.push({
+        name: name,
+        params: {
+          cid: id,
+        },
+      });
     },
   },
 };

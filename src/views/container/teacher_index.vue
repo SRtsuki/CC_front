@@ -22,11 +22,18 @@
     <el-card class="container-control-bar">
       <el-button type="primary" @click="handleCreateContainer">创建容器</el-button>
       <el-button @click="handleAllocateContainer">分配容器</el-button>
-      <el-button @click="handleDeleteContainer">删除容器</el-button>
+      <el-button type="danger" @click="handleDeleteContainer">删除容器</el-button>
     </el-card>
 
+    <!--容器创建-->
     <el-dialog class="container-create-dialog" title="批量创建实验容器" :visible.sync="dialogCreateTableVisible">
-      <el-form :v-loading="containerCreateForm.loading" ref="container-create-form" :rules="rules" :model="containerCreateForm" label-width="80px">
+      <el-form
+        :v-loading="containerCreateForm.loading"
+        ref="container-create-form"
+        :rules="rules"
+        :model="containerCreateForm"
+        label-width="100px"
+      >
         <el-form-item label="选用镜像" prop="image">
           <el-autocomplete
             class="el-input"
@@ -57,7 +64,7 @@
           ></el-input-number>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onCreateContainerSubmit">立即创建</el-button>
+          <el-button type="primary" @click="onCreateContainerSubmit">{{containerCreateForm.submitText}}</el-button>
           <el-button @click="onCreateContainerCancel">取消</el-button>
         </el-form-item>
       </el-form>
@@ -101,10 +108,11 @@
     </el-dialog>
 
     <el-card class="container-list" :body-style="containerListCardBodyStyle">
-<!--      :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"-->
+<!--  todo    :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"-->
       <el-table class="container-list-table"
                 :data="courseContainerList"
                 @selection-change="handleContainerSelectionChange"
+                @row-click="handleOpenStatus"
                 :v-loading="courseListLoading"
       >
         <el-table-column
@@ -116,6 +124,17 @@
           label="容器ID"
           prop="ID"
           width="100">
+        </el-table-column>
+        <el-table-column
+          label="容器状态"
+          width="100">
+          <template slot-scope="scope">
+            <el-tag
+              :type="scope.row.tagType"
+              effect="dark">
+              {{ scope.row.state }}
+            </el-tag>
+          </template>
         </el-table-column>
         <el-table-column
           label="所属用户ID"
@@ -163,16 +182,69 @@
       </el-table>
     </el-card>
 
+<!--    :before-close="handleClose"-->
+    <el-drawer
+      class="container-status-drawer"
+      :withHeader=false
+      :destroy-on-close=true
+      :visible.sync="containerDrawerVisiable"
+      size="20%"
+      direction="rtl"
+      @opened="initStatusDrawer"
+      @close="onStatusDrawerClose"
+    >
+      <div class="container-detail-drawer-container">
+        <h3>容器实时监控</h3>
+        <el-row class="container-detail-table-head">
+          <p>基本信息</p>
+          <el-button @click="handleJumpToTerminal(statusDrawer.containerID)" size="mini" plain>远程连接</el-button>
+        </el-row>
+        <el-row>
+          <span>容器ID：</span>{{statusDrawer.containerID}}
+        </el-row>
+        <el-row>
+          <span>所属用户：</span>{{statusDrawer.username}}
+        </el-row>
+        <el-row>
+          <span>容器状态：</span>{{statusDrawer.state}}
+        </el-row>
+        <el-row>
+          <span>总内存：</span>{{statusDrawer.totalMemory}}MB
+        </el-row>
+        <el-row>
+          <span>内部端口：</span>{{statusDrawer.port}}
+        </el-row>
+        <el-row>
+          <span>外部绑定端口：</span>{{statusDrawer.portbind}}
+        </el-row>
+      </div>
+      <div class="container-status-drawer-container">
+        <div id="echarts-realtime-use" class="echarts-realtime-graph"></div>
+      </div>
+    </el-drawer>
+
   </div>
 </template>
 
 <script>
 import store from "@/store";
 import {getImageList} from "@/api/images";
-import {allocateContainer, createContainers, deleteContainer, getMyContainerList} from "@/api/container";
+import {
+  allocateContainer,
+  createContainers,
+  deleteContainer,
+  getContainerStatus,
+  getMyContainerList
+} from "@/api/container";
 import {getStudentList} from "@/api/student";
 import {debounce} from "@/utils/debounce";
-import Vue from 'vue'
+// 引入 ECharts 主模块
+const echarts = require('echarts/lib/echarts')
+// 引入折线图
+require('echarts/lib/chart/line');
+// 引入提示框和标题组件
+require('echarts/lib/component/tooltip');
+require('echarts/lib/component/title');
 
 export default {
   name: "teacher_index.vue",
@@ -191,7 +263,8 @@ export default {
         env: "",
         envPlaceHolder: "例如：mysql [\"MYSQL_ROOT_PASSWORD=@buaa21\"]",
         port: 0,
-        num: 1
+        num: 1,
+        submitText: "立即创建"
       },
       // 校验规则
       rules : {
@@ -208,6 +281,16 @@ export default {
       // 容器列表
       courseContainerList: [],
       courseListLoading: false,
+      // 容器tag映射
+      containerTag:{
+        created: '',
+        running: 'success',
+        paused: 'info',
+        restarting: 'warning',
+        removing: 'info',
+        exited: 'warning',
+        dead: 'danger',
+      },
       // 容器多选器
       containerMultipleSelection: [],
       // 容器分配dialog
@@ -226,6 +309,20 @@ export default {
       courseUserList: [],
       // 未分配用户列表
       courseNoContainerUserList: [],
+      // 容器详情drawer
+      containerDrawerVisiable: false,
+      // 容情详情参数
+      statusDrawer:{
+        containerID: null,
+        username: null,
+        state: null,
+        totalMemory: null,
+        port: null,
+        portbind: null,
+        interval: null
+      },
+      // 容器详情实时数据
+      statusRealtimeData: []
     }
   },
   computed: {
@@ -255,6 +352,7 @@ export default {
         listData = res.data;
         for (let i = 0; i< res.data.length; i++ ){
           listData[i].CreatedAt = res.data[i].CreatedAt.substr(0,10) + ' ' + res.data[i].CreatedAt.substr(11,8);
+          listData[i].tagType = this.containerTag[res.data[i].state];
         }
         // 然后获取课程用户列表
         getStudentList({ id:parseInt(this.$route.params.cid)}).then(stures => {
@@ -303,6 +401,8 @@ export default {
       this.$message.error("获取备选镜像列表错误：" + err);
     })
   },
+  mounted() {
+  },
   methods: {
     // 课程跳转
     onCourseClick(row){
@@ -325,6 +425,56 @@ export default {
     // 显示容器分配dialog
     handleAllocateContainer(){
       this.dialogAllocateTableVisible = true;
+    },
+    // 显示容器状态抽屉
+    handleOpenStatus(row, column, event){
+      if (this.statusDrawer.interval) {
+        clearInterval(this.statusDrawer.interval)
+      }
+      this.statusDrawer = {}
+      // 获取容器信息
+      getContainerStatus({
+        id: row.ID
+      }).then(res => {
+        if (res.code === 0){
+          let data = {};
+          data.containerID = row.ID;
+          data.username = row.username;
+          data.state = row.state;
+          data.totalMemory = parseInt(res.data.memlimit / 1048576);
+          data.port = row.port;
+          data.portbind = row.portbind;
+          this.statusDrawer = data;
+          this.containerDrawerVisiable = true;
+          // 设置实时统计初始值
+          setTimeout(()=>{
+            res.data.time = new Date().getTime();
+            res.data.mem = (parseFloat(res.data.memuse * 100) / res.data.memlimit).toFixed(4);
+            res.data.cpu = (parseFloat(res.data.cpu)*100).toFixed(4);
+            this.statusRealtimeData.push(res.data);
+          }, 1000)
+          this.statusDrawer.interval = setInterval(()=>{
+            getContainerStatus({
+              id: row.ID
+            }).then(res => {
+              if (res.code === 0){
+                res.data.time = new Date().getTime();
+                res.data.mem = (parseFloat(res.data.memuse * 100) / res.data.memlimit).toFixed(4);
+                res.data.cpu = (parseFloat(res.data.cpu)*100).toFixed(4);
+                this.statusRealtimeData.push(res.data);
+              } else {
+                console.error("获取实时数据失败" + res.msg);
+              }
+            }).catch(err => {
+              console.error("获取实时数据失败" + err);
+            })
+          },10000);
+        } else {
+          this.$message.error("获取容器信息失败:" + res.msg)
+        }
+      }).catch(err => {
+        this.$message.error("获取容器信息失败:" + err)
+      })
     },
     // 关闭容器创建dialog
     onCreateContainerCancel(){
@@ -357,6 +507,7 @@ export default {
       this.$refs['container-create-form'].validate((valid) => {
         if (valid) {
           try {
+            this.containerCreateForm.submitText = "创建中…"
             let data = {
               cid: parseInt(this.$route.params.cid),
               image : this.checkStringWithcolon(this.containerCreateForm.image)? this.containerCreateForm.image: this.containerCreateForm.image + ":latest",
@@ -367,6 +518,7 @@ export default {
             // console.log("check passed:" + data.image);
             this.containerCreateForm.loading = true;
             createContainers(data).then(res => {
+              this.containerCreateForm.submitText = "立即创建"
               if (res.code === 0){
                 this.containerCreateForm.loading = false;
                 this.dialogCreateTableVisible = false;
@@ -377,10 +529,13 @@ export default {
                 this.$message.error("服务器错误：" + res.msg);
               }
             }).catch(err => {
+              this.containerCreateForm.submitText = "立即创建"
               this.$message.error("服务器错误：" + err);
             })
           } catch (e) {
-            this.$message.error("createfailed: " + e)
+            this.$message.error("createfailed: " + e);
+            this.containerCreateForm.submitText = "立即创建"
+            this.updateContainerList();
           }
         } else {
           return false;
@@ -556,6 +711,7 @@ export default {
           listData = res.data;
           for (let i = 0; i< res.data.length; i++ ){
             listData[i].CreatedAt = res.data[i].CreatedAt.substr(0,10) + ' ' + res.data[i].CreatedAt.substr(11,8);
+            listData[i].tagType = this.containerTag[res.data[i].state];
           }
 
           // 加入用户数据
@@ -586,6 +742,91 @@ export default {
         this.$message.error("获取容器列表错误：" + err);
       });
     },
+    // 实时信息面板初始化
+    initStatusDrawer(){
+      // 初始化echarts
+      this.initCharts();
+    },
+    // echarts初始化
+    initCharts(){
+      this.chart = echarts.init(document.getElementById('echarts-realtime-use'));
+      this.setChartOptions();
+    },
+    setChartOptions(){
+      this.chart.setOption({
+        title: {
+          text: '实时使用率',
+          textStyle: {
+            color: '#1c1f21'
+          }
+        },
+        tooltip: {
+          trigger: 'axis',
+        },
+        legend: {
+          data: ['CPU使用率(%)', '内存使用率(%)']
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {}
+          }
+        },
+        xAxis: {
+          type: 'time'
+        },
+        yAxis: {
+          type: 'value',
+          scale: true,
+          max: 100,
+          min: 0,
+        },
+        series: []
+      })
+    },
+    //实时信息面板关闭
+    onStatusDrawerClose(){
+      // 关闭定时器
+      if (this.statusDrawer.interval) {
+        clearInterval(this.statusDrawer.interval)
+      }
+      // 清除实时数据
+      this.statusRealtimeData = [];
+    }
+  },
+  watch: {
+    statusRealtimeData(val) {
+      // console.log("====================")
+      // console.log(val);
+      if (this.chart && val.length > 0 ){
+        let cpudata = [];
+        let memorydata = [];
+        // 抛弃10分钟（超过60）的数据点
+        for (let i = val.length > 60? val.length - 60: 0; i < val.length; i++) {
+          cpudata.push([val[i].time, val[i].cpu]);
+          memorydata.push([val[i].time, val[i].mem]);
+        }
+        this.chart.setOption({series: [
+            {
+              name: 'CPU使用率(%)',
+              type: 'line',
+              step: 'start',
+              data: cpudata
+            },
+            {
+              name: '内存使用率(%)',
+              type: 'line',
+              step: 'start',
+              data: memorydata
+            }
+          ]});
+      }
+    }
   }
 }
 </script>
@@ -661,6 +902,50 @@ export default {
     align-items: flex-start;
     .container-list-table {
       width: 100%;
+    }
+  }
+
+  .container-status-drawer{
+    .container-detail-drawer-container {
+      padding: 24px;
+      h3 {
+        margin-bottom: 20px;
+        display: inline-block;
+        font-size: 28px;
+      }
+      .container-detail-table-head {
+        border-left-width: 5px !important;
+        border-left-color: $border-first-color !important;
+        border-top-style: solid !important;
+        background: $background-primary-color;
+        padding: 8px 19px !important;
+        line-height: 32px;
+        display: flex;
+        .el-button {
+          align-self: end;
+          margin-left: auto;
+        }
+      }
+      .el-row {
+        font-size: 14px;
+        padding: 14px 20px;
+        color: $font-second-color;
+        border-style: none solid solid solid ;
+        border-width: 1px;
+        border-color: $border-three-color;
+        span {
+          color: $font-four-color;
+        }
+      }
+    }
+
+    .container-status-drawer-container {
+      padding: 24px;
+      .echarts-realtime-graph {
+        margin: auto;
+        height: calc(18vw * 0.66);
+        width: 18vw;
+      }
     }
   }
 </style>

@@ -3,7 +3,7 @@
     <el-header class="register-header">
       <router-link style="margin: auto;" to="/">
 <!--        <img src="/static/logo/logo.png" height="72" alt="Logo">-->
-        <span>【假装是个LOGO】</span>
+        <span>【云计算实验平台】</span>
       </router-link>
       <el-divider direction="vertical"></el-divider>
       <span>注册</span>

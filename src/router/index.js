@@ -186,6 +186,26 @@ export const asyncRoutes = [
       }
     ]
   },
+  // 学生查看分配容器
+  {
+    path: '/s/container',
+    component: Layout,
+    redirect: '/s/container/index',
+    meta: {
+      title: '课程容器',
+      icon: 'form',
+      roles: ['student'],
+      hascid: true  //必须所有级都写
+    },
+    children: [
+      {
+        path: 'index/:cid',
+        name: 'student-container',
+        component: () => import('@/views/container/student_index'),
+        meta: { title: '课程容器', icon: 'form', roles: ['student'] ,breadcrumb: false, hascid: true}
+      }
+    ]
+  },
   // 学生查看课程资源文件
   {
     path: '/s/resource',
@@ -245,6 +265,26 @@ export const asyncRoutes = [
       }
     ]
   },
+  // 镜像管理
+  {
+    path: '/t/image',
+    component: Layout,
+    redirect: '/t/imagem/index',
+    meta: {
+      title: '镜像管理',
+      icon: 'form',
+      roles: ['teacher'],
+      hascid: true  //必须所有级都写
+    },
+    children: [
+      {
+        path: 'index/:cid',
+        name: 'image',
+        component: () => import('@/views/imagemanage/index'),
+        meta: { title: '镜像资源管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false, hascid: true}
+      }
+    ]
+  },
   // 教师容器管理
   {
     path: '/t/container',
@@ -282,26 +322,6 @@ export const asyncRoutes = [
         name: 'resource',
         component: () => import('@/views/resource/teacher_index'),
         meta: { title: '课程资源管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false, hascid: true}
-      }
-    ]
-  },
-  // 镜像管理
-  {
-    path: '/t/image',
-    component: Layout,
-    redirect: '/t/imagem/index',
-    meta: {
-      title: '镜像管理',
-      icon: 'form',
-      roles: ['teacher'],
-      hascid: true  //必须所有级都写
-    },
-    children: [
-      {
-        path: 'index/:cid',
-        name: 'image',
-        component: () => import('@/views/imagemanage/index'),
-        meta: { title: '镜像资源管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false, hascid: true}
       }
     ]
   },

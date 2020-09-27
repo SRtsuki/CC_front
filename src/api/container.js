@@ -35,3 +35,12 @@ export function deleteContainer(data) {
     data
   })
 }
+
+// 获取容器运行状态
+export function getContainerStatus(data){
+  return request({
+    url: '/docker/container',
+    method: 'post',
+    data
+  })
+}

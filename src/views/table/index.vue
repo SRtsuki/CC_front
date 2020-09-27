@@ -16,6 +16,12 @@
           <el-table-column prop="tid" label="任课教师" sortable width="100"></el-table-column>
           <el-table-column prop="name" label="课程名" width="180"></el-table-column>
           <el-table-column prop="instruction" label="介绍"></el-table-column>
+          <el-table-column prop="instruction" label="操作" width="200">
+            <template slot-scope="scope">
+              <el-button type="primary" size="mini" @click="handleJump('student-container', scope.row.ID)">查看容器</el-button>
+              <el-button type="primary" size="mini" @click="handleJump('student-resource', scope.row.ID)">查看资源</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </el-main>
@@ -50,6 +56,9 @@ export default {
         this.tableLoading = false;
       })
     },
+    handleJump(name, id){
+      this.$router.push({ name: name, params:{cid: id}});
+    }
   }
 };
 </script>
