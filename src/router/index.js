@@ -33,10 +33,6 @@ import Layout from '@/layout'
 export const constantRoutes = [
   // 容器terminal测试
   {
-    path: '/terminal-test',
-    component: () => import('@/views/terminal/test'),
-  },
-  {
     path: '/terminal',
     component: () => import('@/views/terminal/index'),
   },
