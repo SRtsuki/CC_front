@@ -22,6 +22,7 @@
     <el-card class="resource-operate-card">
       <el-button @click="handleShowUpload">上传文件</el-button>
       <el-button @click="handleFileDownload">下载文件</el-button>
+      <el-button @click="handleFileDelete">删除文件</el-button>
     </el-card>
 
     <el-dialog class="resource-operate-dialog" title="上传文件" :visible.sync="dialogUploadTableVisible">
@@ -87,7 +88,7 @@ import wl from "wl-vue-select";
 import "wl-vue-select/lib/wl-vue-select.css"
 import "wl-explorer/lib/wl-explorer.css"
 import store from "@/store";
-import {downloadStaticFileByBlob, getCoursefileList} from "@/api/coursefile";
+import {deleteCourseFile, downloadStaticFileByBlob, getCoursefileList} from "@/api/coursefile";
 import {BASE_URL} from "@/api/config";
 
 Vue.use(wlExplorer);
@@ -308,6 +309,7 @@ export default {
       getCoursefileList({
         cid: parseInt(this.$route.params.cid)
       }).then(res => {
+        this.multipleFileSelection = [];
         this.file_table_data = res.data;
         let suffixArray = [];
         let suffix = "";
@@ -387,6 +389,23 @@ export default {
           URL.revokeObjectURL(url);
         }).catch(err => {
           this.$message.error("下载失败:" + err);
+        })
+      }
+    },
+    // 文件删除
+    handleFileDelete(){
+      for (let i = 0; i < this.multipleFileSelection.length; i++){
+        let params = {
+          cid : parseInt(this.$route.params.cid),
+          name : this.multipleFileSelection[i].name
+        }
+        deleteCourseFile(params).then(res => {
+          if (res.code === 0 ){
+            this.$message.success("删除成功");
+            this.getFileList();
+          }
+        }).catch(err => {
+          this.$message.error("删除失败:" + err);
         })
       }
     },
