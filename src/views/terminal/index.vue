@@ -20,15 +20,17 @@ export default {
         console.log("为空")
         return
     }
-    let id = this.$route.query.id
+    
+    let id = parseInt(this.$route.query.id)
 
     Terminal.applyAddon(attach);
     Terminal.applyAddon(fit);
     Terminal.applyAddon(fullscreen);
     Terminal.applyAddon(webLinks);
 
+
     const terminal = new Terminal();
-    const ws = new WebSocket(WEBSOCKET_BASE_URL + id);
+    const ws = new WebSocket(WEBSOCKET_BASE_URL + id + "&workdir=/");
     ws.onclose = function() {
       console.log("服务器关闭了连接");
     };
