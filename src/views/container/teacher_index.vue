@@ -496,42 +496,47 @@ export default {
     },
     // 容器删除
     handleDeleteContainer(){
-      let containerToDelList = "";
-      for (let i = 0;i < this.containerMultipleSelection.length; i++){
-        containerToDelList += (this.containerMultipleSelection[i].ID + ' ');
+      if (this.containerMultipleSelection.length !== 0){
+        let containerToDelList = "";
+        for (let i = 0;i < this.containerMultipleSelection.length; i++){
+          containerToDelList += (this.containerMultipleSelection[i].ID + ' ');
+        }
+        this.$confirm("此操作将永久删除容器 " + containerToDelList + " 是否继续?", '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let counter = this.containerMultipleSelection.length;
+          let interval = setInterval(()=>{
+            counter--
+            if (counter < 0) {
+              clearInterval(interval);
+              setTimeout(()=>{
+                this.$message({
+                  type: 'success',
+                  message: '删除成功!'
+                });
+                this.updateContainerList();
+              }, 1000)
+            } else {
+              deleteContainer({
+                containerid: this.containerMultipleSelection[counter].ID,
+                cid: parseInt(this.$route.params.cid)
+              }).then(res => {
+                if (res.code !== 0 ){
+                  this.$message.error("删除容器失败:" + res.msg)
+                }
+              }).catch(err =>{
+                this.$message.error("删除容器失败:" + err)
+              })
+            }
+          }, 200)
+        }).catch(()=>{
+          return false;
+        })
+      } else {
+        return false;
       }
-      console.log(containerToDelList);
-      this.$confirm("此操作将永久删除容器 " + containerToDelList + " 是否继续?", '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let counter = this.containerMultipleSelection.length;
-        let interval = setInterval(()=>{
-          counter--
-          if (counter < 0) {
-            clearInterval(interval);
-            setTimeout(()=>{
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              });
-              this.updateContainerList();
-            }, 1000)
-          } else {
-            deleteContainer({
-              containerid: this.containerMultipleSelection[counter].ID,
-              cid: parseInt(this.$route.params.cid)
-            }).then(res => {
-              if (res.code !== 0 ){
-                this.$message.error("删除容器失败:" + res.msg)
-              }
-            }).catch(err =>{
-              this.$message.error("删除容器失败:" + err)
-            })
-          }
-        }, 200)
-      })
     },
     // 跳转至容器终端
     handleJumpToTerminal(containerID){
