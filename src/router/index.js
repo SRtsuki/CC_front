@@ -249,7 +249,27 @@ export const asyncRoutes = [
       }
     ]
   },
-  // 课程资源管理
+  // 教师容器管理
+  {
+    path: '/t/container',
+    component: Layout,
+    redirect: '/t/container/index',
+    meta: {
+      title: '课程容器管理',
+      icon: 'form',
+      roles: ['teacher'],
+      hascid: true  //必须所有级都写
+    },
+    children: [
+      {
+        path: 'index/:cid',
+        name: 'container',
+        component: () => import('@/views/container/teacher_index'),
+        meta: { title: '课程容器管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false, hascid: true}
+      }
+    ]
+  },
+  // 教师课程资源管理
   {
     path: '/t/resource',
     component: Layout,
