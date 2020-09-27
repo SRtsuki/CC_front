@@ -20,8 +20,9 @@
     </el-card>
 
     <el-card class="container-control-bar">
-      <el-button @click="handleCreateContainer">创建容器</el-button>
+      <el-button type="primary" @click="handleCreateContainer">创建容器</el-button>
       <el-button @click="handleAllocateContainer">分配容器</el-button>
+      <el-button @click="handleDeleteContainer">删除容器</el-button>
     </el-card>
 
     <el-dialog class="container-create-dialog" title="批量创建实验容器" :visible.sync="dialogCreateTableVisible">
@@ -64,7 +65,7 @@
 
     <!--    容器分配    -->
     <el-dialog class="container-allocate-dialog" title="实验容器分配" :visible.sync="dialogAllocateTableVisible">
-      <el-form :v-loading="containerAllocateForm.loading" ref="container-allocate-form" :rules="rules" :model="containerAllocateForm" label-width="80px">
+      <el-form :v-loading="containerAllocateForm.loading" ref="container-allocate-form" :rules="rules" :model="containerAllocateForm" label-width="120px">
         <el-form-item
           v-for="(container, index) in containerAllocateForm.containers"
           :label="'容器ID：' + container.containerid"
@@ -83,7 +84,9 @@
               ></el-autocomplete>
             </el-col>
             <el-col :span="9">
-              <span>{{container.nickname}}&nbsp;</span>
+              <span v-if="container.response === containerAllocateForm.response.pending">{{container.nickname}}&nbsp;</span>
+              <span v-else-if="container.response === containerAllocateForm.response.success" class="span-on-success">分配成功</span>
+              <span v-else class="span-on-failed">分配失败</span>
             </el-col>
             <el-col :span="1">
               <el-button @click.prevent="removeContainer(container)">取消分配此容器</el-button>
@@ -102,6 +105,7 @@
       <el-table class="container-list-table"
                 :data="courseContainerList"
                 @selection-change="handleContainerSelectionChange"
+                :v-loading="courseListLoading"
       >
         <el-table-column
           type="selection"
@@ -141,6 +145,17 @@
           width="100">
         </el-table-column>
         <el-table-column
+          label="终端访问"
+          width="100">
+          <template slot-scope="scope">
+            <el-button
+              type="primary"
+              size="mini"
+              @click="handleJumpToTerminal(scope.row.ID)"
+            >跳转终端</el-button>
+          </template>
+        </el-table-column>
+        <el-table-column
           label="创建日期"
           prop="CreatedAt"
           width="300">
@@ -154,9 +169,10 @@
 <script>
 import store from "@/store";
 import {getImageList} from "@/api/images";
-import {allocateContainer, createContainers, getMyContainerList} from "@/api/container";
+import {allocateContainer, createContainers, deleteContainer, getMyContainerList} from "@/api/container";
 import {getStudentList} from "@/api/student";
 import {debounce} from "@/utils/debounce";
+import Vue from 'vue'
 
 export default {
   name: "teacher_index.vue",
@@ -191,6 +207,7 @@ export default {
       },
       // 容器列表
       courseContainerList: [],
+      courseListLoading: false,
       // 容器多选器
       containerMultipleSelection: [],
       // 容器分配dialog
@@ -199,6 +216,11 @@ export default {
       containerAllocateForm: {
         loading: false,
         containers: [],
+        response: {
+          pending: 1,
+          success: 2,
+          fail: 3
+        }
       },
       // 课程用户列表
       courseUserList: [],
@@ -225,37 +247,41 @@ export default {
     }).catch(err=>{
       this.$message.error("服务器错误：" + err);
     });
+    this.courseListLoading = true;
     // 获取容器列表
     getMyContainerList({cid:parseInt(this.$route.params.cid)}).then(res => {
+      let listData = [];
       if (res.code === 0){
-        this.courseContainerList = res.data;
+        listData = res.data;
         for (let i = 0; i< res.data.length; i++ ){
-          this.courseContainerList[i].CreatedAt = res.data[i].CreatedAt.substr(0,10) + ' ' + res.data[i].CreatedAt.substr(11,8);
+          listData[i].CreatedAt = res.data[i].CreatedAt.substr(0,10) + ' ' + res.data[i].CreatedAt.substr(11,8);
         }
         // 然后获取课程用户列表
         getStudentList({ id:parseInt(this.$route.params.cid)}).then(stures => {
           if (stures.code === 0){
             this.courseUserList = stures.data;
-            for (let j = 0; j < this.courseContainerList.length; j++){
-              if (this.courseContainerList[j].uid === 0 ){
-                this.courseContainerList[j].uid = "未分配"
-                this.courseContainerList[j].username = "-"
-                this.courseContainerList[j].nickname = "-"
+            for (let j = 0; j < listData.length; j++){
+              if (listData[j].uid === 0 ){
+                listData[j].uid = "未分配"
+                listData[j].username = "-"
+                listData[j].nickname = "-"
               } else {
                 let uindex = this.courseUserList.findIndex(user => {
-                  return user.ID === this.courseContainerList[i].uid;
+                  return user.ID === listData[j].uid;
                 })
-                this.courseContainerList[j].username = this.courseUserList[uindex].username;
-                this.courseContainerList[j].nickname = this.courseUserList[uindex].nickname;
+                listData[j].username = this.courseUserList[uindex].username;
+                listData[j].nickname = this.courseUserList[uindex].nickname;
                 this.courseUserList[uindex].allocate = true;
               }
             }
             // 生成未分配用户列表
             setTimeout(()=>{
+              this.courseContainerList = listData;
+              this.courseListLoading = false;
               this.updateNoContainerList();
             }, 500)
           } else {
-            this.$message.error("获取用户列表错误：" + stures.msg);
+            this.$message.error("获取用户列表错误:" + stures.msg);
           }
         }).catch(err => {
           this.$message.error("获取用户列表错误：" + err);
@@ -298,8 +324,6 @@ export default {
     },
     // 显示容器分配dialog
     handleAllocateContainer(){
-      console.log("===============================")
-      console.log(this.containerAllocateForm.containers);
       this.dialogAllocateTableVisible = true;
     },
     // 关闭容器创建dialog
@@ -348,6 +372,9 @@ export default {
                 this.dialogCreateTableVisible = false;
                 this.$message.success("成功创建" + res.data + "个容器");
                 this.$refs['container-create-form'].resetFields();
+                this.updateContainerList();
+              } else {
+                this.$message.error("服务器错误：" + res.msg);
               }
             }).catch(err => {
               this.$message.error("服务器错误：" + err);
@@ -371,7 +398,8 @@ export default {
             uid: '',
             username: '',
             nickname: '',
-            containerid: this.containerMultipleSelection[i].ID
+            containerid: this.containerMultipleSelection[i].ID,
+            response: this.containerAllocateForm.response.pending,
           });
         }
       }
@@ -435,23 +463,124 @@ export default {
     // 提交容器分配信息
     onAllocateContainerSubmit(){
       let count = this.containerAllocateForm.containers.length;
-      var interval = setInterval(()=> {
-        count--;
-        if (count < 0){
-          clearInterval(interval);
+      let showindex = count;
+      if (count !== 0){
+        var interval = setInterval(()=> {
+          count--;
+          if (count < 0){
+            clearInterval(interval);
+            this.updateContainerList();
+            setTimeout(()=>{
+              this.dialogAllocateTableVisible = false;
+            }, 500)
+          } else {
+            allocateContainer({
+              cid: parseInt(this.$route.params.cid),
+              uid: this.containerAllocateForm.containers[count].uid,
+              containerid: this.containerAllocateForm.containers[count].containerid
+            }).then(res=> {
+              if (res.code === 0){
+                this.containerAllocateForm.containers[--showindex].response = this.containerAllocateForm.response.success;
+              } else {
+                this.containerAllocateForm.containers[--showindex].response = this.containerAllocateForm.response.fail;
+                this.$message.error("容器分配失败:" + res.msg);
+              }
+            }).catch(err => {
+              this.$message.error("容器分配失败:" + err);
+            })
+          }
+        }, 200)
+      } else {
+        this.dialogAllocateTableVisible = false;
+      }
+    },
+    // 容器删除
+    handleDeleteContainer(){
+      let containerToDelList = "";
+      for (let i = 0;i < this.containerMultipleSelection.length; i++){
+        containerToDelList += (this.containerMultipleSelection[i].ID + ' ');
+      }
+      console.log(containerToDelList);
+      this.$confirm("此操作将永久删除容器 " + containerToDelList + " 是否继续?", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        let counter = this.containerMultipleSelection.length;
+        let interval = setInterval(()=>{
+          counter--
+          if (counter < 0) {
+            clearInterval(interval);
+            setTimeout(()=>{
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+              this.updateContainerList();
+            }, 1000)
+          } else {
+            deleteContainer({
+              containerid: this.containerMultipleSelection[counter].ID,
+              cid: parseInt(this.$route.params.cid)
+            }).then(res => {
+              if (res.code !== 0 ){
+                this.$message.error("删除容器失败:" + res.msg)
+              }
+            }).catch(err =>{
+              this.$message.error("删除容器失败:" + err)
+            })
+          }
+        }, 200)
+      })
+    },
+    // 跳转至容器终端
+    handleJumpToTerminal(containerID){
+      let routerUrl = this.$router.resolve({
+        path: "/terminal",
+        query: {id: containerID}
+      });
+      window.open(routerUrl.href, "_blank");
+    },
+    // 更新容器列表信息
+    updateContainerList(){
+      // 重新获取list
+      this.courseListLoading = true;
+      getMyContainerList({cid:parseInt(this.$route.params.cid)}).then(res => {
+        let listData = [];
+        if (res.code === 0){
+          listData = res.data;
+          for (let i = 0; i< res.data.length; i++ ){
+            listData[i].CreatedAt = res.data[i].CreatedAt.substr(0,10) + ' ' + res.data[i].CreatedAt.substr(11,8);
+          }
+
+          // 加入用户数据
+          for (let j = 0; j < listData.length; j++){
+            if (listData[j].uid === 0 ){
+              listData[j].uid = "未分配"
+              listData[j].username = "-"
+              listData[j].nickname = "-"
+            } else {
+              let uindex = this.courseUserList.findIndex(user => {
+                return user.ID === listData[j].uid;
+              })
+              listData[j].username = this.courseUserList[uindex].username;
+              listData[j].nickname = this.courseUserList[uindex].nickname;
+              this.courseUserList[uindex].allocate = true;
+            }
+          }
+          // 生成未分配用户列表
+          setTimeout(()=>{
+            this.courseContainerList = listData;
+            this.courseListLoading = false;
+            this.updateNoContainerList();
+          }, 500)
         } else {
-          allocateContainer({
-            cid: parseInt(this.$route.params.cid),
-            uid: this.containerAllocateForm.containers[count].uid,
-            containerid: this.containerAllocateForm.containers[count].containerid
-          }).then(res=> {
-            console.log(res);
-          }).catch(err => {
-            this.$message.error("容器分配失败:" + err);
-          })
+          this.$message.error("获取容器列表错误：" + res.msg);
         }
-      }, 100)
-    }
+      }).catch(err => {
+        this.$message.error("获取容器列表错误：" + err);
+      });
+    },
   }
 }
 </script>
@@ -506,8 +635,15 @@ export default {
     .el-col {
       padding-left: 10px;
       padding-right: 10px;
+      .span-on-success {
+        color: $theme-green-color;
+      }
+      .span-on-failed {
+        color: $theme-red-color;
+      }
     }
   }
+
 
   .container-list {
     width: 99%;

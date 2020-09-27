@@ -26,3 +26,12 @@ export function allocateContainer(data) {
     data
   })
 }
+
+// 容器删除
+export function deleteContainer(data) {
+  return request({
+    url: '/docker/delc',
+    method: 'post',
+    data
+  })
+}
