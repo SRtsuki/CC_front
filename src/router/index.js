@@ -269,7 +269,26 @@ export const asyncRoutes = [
       }
     ]
   },
-
+  // 镜像管理
+  {
+    path: '/t/image',
+    component: Layout,
+    redirect: '/t/imagem/index',
+    meta: {
+      title: '镜像管理',
+      icon: 'form',
+      roles: ['teacher'],
+      hascid: true  //必须所有级都写
+    },
+    children: [
+      {
+        path: 'index/:cid',
+        name: 'image',
+        component: () => import('@/views/imagemanage/index'),
+        meta: { title: '镜像资源管理', icon: 'form', roles: ['teacher'] ,breadcrumb: false, hascid: true}
+      }
+    ]
+  },
   // {
   //   path: '/permission',
   //   component: Layout,
